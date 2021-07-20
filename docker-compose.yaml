@@ -5,7 +5,7 @@ services:
     volumes:
       - ./nginx/node.conf:/etc/nginx/conf.d/node.template
       # if run docker on local, comment /etc/ssl:/etc/ssl
-      - ./ssl/coolhahow.xyz.csr:/etc/nginx/ssl/ssl.csr
+      - ./ssl/coolhahow.xyz.crt:/etc/nginx/ssl/ssl.csr
       - ./ssl/coolhahow.xyz.key:/etc/nginx/ssl/ssl.key
 
     ports:
