@@ -1,14 +1,18 @@
-const router = require('express').Router();
+const router = require('express').Router()
 
 const {
   wrapAsync
-} = require('../../util/util');
+} = require('../../util/util')
 
 const {
-  heroesData
-} = require('../controllers/heroes_controller');
+  listHeroes,
+  singleHero
+} = require('../controllers/heroes_controller')
 
 router.route('/heroes')
-  .get(wrapAsync(heroesData));
+  .get(wrapAsync(listHeroes))
 
-module.exports = router;
+router.route('/heroes/:id')
+  .get(wrapAsync(singleHero))
+
+module.exports = router

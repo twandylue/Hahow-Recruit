@@ -1,22 +1,22 @@
 require('dotenv').config()
-const { rateLimiterRoute } = require('./util/ratelimiter')
 const { PORT_TEST, PORT, NODE_ENV } = process.env
 const port = NODE_ENV === 'test' ? PORT_TEST : PORT
-// Express Initialization
+
 const express = require('express')
 const cors = require('cors')
 const app = express()
+const rateLimit = require('express-rate-limit')
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+})
+
 app.set('trust proxy', true)
-// app.set('json spaces', 2);
-
-// app.use(express.json({ limit: '210000kb' }));
+app.set('json spaces', 2)
 app.use(express.urlencoded({ extended: true }))
-
-// CORS allow all
 app.use(cors())
-
+app.use(limiter)
 app.use(
-  rateLimiterRoute,
   [
     require('./server/routes/heroes_route')
   ]
