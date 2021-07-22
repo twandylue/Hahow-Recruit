@@ -4,6 +4,11 @@ const wrapAsync = (fn) => {
   }
 }
 
+const handler = (promise) => promise
+  .then((data) => ([data, undefined]))
+  .catch((error) => ([undefined, error]))
+
 module.exports = {
-  wrapAsync
+  wrapAsync,
+  handler
 }

@@ -1,44 +1,41 @@
+const { handler } = require('../../util/util')
 const axios = require('axios')
-
 require('dotenv').config()
 const { hahowServerHost, hahowServerHeroesPath, retryLimit } = process.env
-
-const heroesListUrl = `${hahowServerHost}/${hahowServerHeroesPath}`
-
-const handler = (promise) => promise
-  .then((data) => ([data, undefined]))
-  .catch((error) => ([undefined, error]))
+const heroesUrl = `${hahowServerHost}/${hahowServerHeroesPath}`
 
 const listHeroes = async (req, res, next) => {
-  const [heroesRes, error] = await handler(axios.get(heroesListUrl))
+  console.log(req.isUserAuth)
+  const [heroesResult, error] = await handler(axios.get(heroesUrl))
   if (error) {
     return res.status(500).json({
       message: 'server error, please try it again'
     })
   }
-  if (heroesRes.status === 200 && heroesRes.data.code === 1000) {
+  if (heroesResult.status === 200 && heroesResult.data.code === 1000) {
     return res.status(500).json({
       message: 'server error, please try it again'
     })
   }
   return res.status(200).json({
-    heroes: heroesRes.data
+    heroes: heroesResult.data
   })
 }
 
 const singleHero = async (req, res, next) => {
+  console.log(req.isUserAuth)
   const heroId = req.params.id
   let retryCount = 0
   const test = async function () {
-    const [heroDetailRes, error] = await handler(axios.get(`${heroesListUrl}/${heroId}`))
+    const [heroDetailResult, error] = await handler(axios.get(`${heroesUrl}/${heroId}`))
     if (error) {
       return res.status(400).json({
         message: 'maybe the input hero id out of range, please try other id again'
       })
     }
-    if (heroDetailRes.status === 200 && heroDetailRes.data.code === 1000) {
-      retryCount++
+    if (heroDetailResult.status === 200 && heroDetailResult.data.code === 1000) {
       if (retryCount < retryLimit) {
+        retryCount++
         test()
       } else {
         return res.status(500).json({
@@ -46,7 +43,7 @@ const singleHero = async (req, res, next) => {
         })
       }
     } else {
-      return res.status(200).json(heroDetailRes.data)
+      return res.status(200).json(heroDetailResult.data)
     }
   }
   test()
