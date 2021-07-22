@@ -5,6 +5,7 @@ const port = NODE_ENV === 'test' ? PORT_TEST : PORT
 const express = require('express')
 const cors = require('cors')
 const app = express()
+const path = require('path')
 const rateLimit = require('express-rate-limit')
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minutes
@@ -16,12 +17,17 @@ app.set('json spaces', 2)
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 app.use(limiter)
+app.use(express.static('public'))
 app.use(
   [
     require('./server/routes/heroes_route')
   ]
 )
-
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '/public/homepage.html'), (err) => {
+    if (err) res.status(404).redirect('/404.html')
+  })
+})
 app.use(function (req, res, next) {
   res.status(404).send('404 page not found')
 })
