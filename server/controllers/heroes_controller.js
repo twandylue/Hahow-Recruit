@@ -5,9 +5,8 @@ const { cacheMode } = process.env
 
 const listHeroes = async (req, res, next) => {
   const isUserAuth = req.isUserAuth
-
   // if in cache mode and the cache has data, use it directly
-  if (cacheMode) {
+  if (cacheMode === 'on') {
     let cacheHeroes
     if (isUserAuth) {
       cacheHeroes = await getCache('heroes_profiles')
@@ -28,7 +27,7 @@ const singleHero = async (req, res, next) => {
   const heroId = req.params.id
   const isUserAuth = req.isUserAuth
   // if in cache mode and the cache has data, use it directly
-  if (cacheMode) {
+  if (cacheMode === 'on') {
     let cacheSingoHero
     if (req.isUserAuth) {
       cacheSingoHero = await getCache(`${heroId}_profile`)

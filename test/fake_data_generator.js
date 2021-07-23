@@ -1,7 +1,8 @@
 require('dotenv').config()
+const { cache } = require('../util/cache.js')
 const { hahowServerHost, hahowServerHeroesPath, hahowServerAuthPath } = process.env
+// Used Nock to mock data of third party API(hahow API)
 const nock = require('nock')
-
 const {
   hahowHeroes,
   hahowHeroId1,
@@ -11,6 +12,16 @@ const {
   hahowHeroId4Profile,
   hahowCheckAuth
 } = require('./fake_data')
+
+cache.flushdb(function (err, ok) {
+  if (err) {
+    console.log(err)
+    return err
+  }
+  if (ok) {
+    console.log(ok)
+  }
+})
 
 const nockFakeData = () => {
   nock(hahowServerHost)

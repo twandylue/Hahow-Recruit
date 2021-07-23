@@ -23,11 +23,11 @@ const authCheck = async (req, res, next) => {
   const [authResult, err] = await handler(axios.post(`${authUrl}`, { name, password }))
   // if verification err , avoid getting unauthorized data , return
   if (err) return res.status(400).json({ message: 'Please check Name & Password' })
-  // if verification ok , but message = Backend Error , not retry , avoid getting unauthorized data
+  // if verification ok , but data.code = 1000 , not retry , treated as not auth
   if (authResult.status === 200 && authResult.data.code !== 1000) {
     isAuth = true
-    req.isUserAuth = isAuth
   }
+  req.isUserAuth = isAuth
   return next()
 }
 

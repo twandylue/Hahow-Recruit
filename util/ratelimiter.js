@@ -2,7 +2,7 @@ require('dotenv').config()
 const { NODE_ENV, RATE_LIMIT_WINDOW, RATE_LIMIT_COUNT, RATE_LIMIT_COUNT_DEVELOPMENT, RATE_LIMIT_COUNT_TEST } = process.env
 const Cache = require('./cache')
 const env = NODE_ENV
-// check mode to control ratelimiter
+// check mode to control RATE_LIMIT_COUNT
 const QUOTA = {
   production: RATE_LIMIT_COUNT,
   development: RATE_LIMIT_COUNT_DEVELOPMENT,

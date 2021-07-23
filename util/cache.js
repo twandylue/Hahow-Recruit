@@ -9,16 +9,6 @@ cache.on('ready', () => {
 })
 cache.on('error', () => {})
 
-// cache.flushdb(function (err, ok) {
-//   if (err) {
-//     console.log(err)
-//     return err
-//   }
-//   if (ok) {
-//     console.log(ok)
-//   }
-// })
-
 const getCache = promisify(cache.get).bind(cache)
 const setCache = promisify(cache.set).bind(cache)
 const delCache = promisify(cache.del).bind(cache)

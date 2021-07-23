@@ -34,20 +34,20 @@ const getHeroes = async function (retryCount, isUserAuth) {
     }
   }
   // cache store heroes
-  if (cacheMode) await setCache('heroes', JSON.stringify({ heroes: heroesResult.data }), 'EX', 600)
+  if (cacheMode === 'on') await setCache('heroes', JSON.stringify({ heroes: heroesResult.data }), 'EX', 600)
   if (isUserAuth) {
     for (const i in heroesResult.data) {
       const heroProfileResult = await getHeroProfile(0, heroesResult.data[i].id)
       if (heroProfileResult.statusCode === 200) {
         heroesResult.data[i].profile = heroProfileResult.profile
         // cache store each hero profile
-        if (cacheMode) await setCache(`${heroesResult.data[i].id}_profile`, JSON.stringify(heroesResult.data[i]), 'EX', 600)
+        if (cacheMode === 'on') await setCache(`${heroesResult.data[i].id}_profile`, JSON.stringify(heroesResult.data[i]), 'EX', 600)
       } else {
         return { statusCode: 500, message: 'server error, please try it again' }
       }
     }
     // cache store heroes profile
-    if (cacheMode) await setCache('heroes_profiles', JSON.stringify({ heroes: heroesResult.data }), 'EX', 600)
+    if (cacheMode === 'on') await setCache('heroes_profiles', JSON.stringify({ heroes: heroesResult.data }), 'EX', 600)
     return { statusCode: 200, heroes: heroesResult.data }
   } else {
     return { statusCode: 200, heroes: heroesResult.data }
@@ -67,14 +67,14 @@ const getSingleHero = async function (retryCount, heroId, isUserAuth) {
     }
   } else {
     // cache store each hero
-    if (cacheMode) await setCache(`${heroId}`, JSON.stringify(heroResult.data), 'EX', 600)
+    if (cacheMode === 'on') await setCache(`${heroId}`, JSON.stringify(heroResult.data), 'EX', 600)
     // if auth ok , add profile data
     if (isUserAuth) {
       const heroProfileResult = await getHeroProfile(0, heroId)// now retryCount = 0
       if (heroProfileResult.statusCode === 200) {
         heroResult.data.profile = heroProfileResult.profile
         // cache store each hero profile
-        if (cacheMode) await setCache(`${heroId}_profile`, JSON.stringify(heroResult.data), 'EX', 600)
+        if (cacheMode === 'on') await setCache(`${heroId}_profile`, JSON.stringify(heroResult.data), 'EX', 600)
         return { statusCode: 200, hero: heroResult.data }
       } else {
         return { statusCode: 500, message: 'server error, please try it again' }

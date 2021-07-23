@@ -4,13 +4,16 @@ Assessment project for HaHow recruit
 
 # Contents
 
-- [API Endpoints](#api-endpoints)
-- [Concepts](#concepts)
-- [如何跑起來](#如何跑起來)
-- [Coding Style](#Coding-Style)
-- [關於測試](#關於測試)
-- [Issues](#Issues)
-
+* [Start Server](#Start-Server)
+    * [Preparation](#Preparation)
+    * [Local start](#Local-start)
+* [Run API test](#Run-API-test)
+* [Architecture](#Architecture)
+* [Third party library](#Third-party-library)
+* [Comment rule](#Comment-rule)
+* [Difficulty](#Difficulty)
+* [Bonus](#Bonus)
+* [API Documentation](#API-Documentation)
 
 ## Start Server
 
@@ -26,15 +29,28 @@ cacheMode='on'
 hahowServerHost = 'https://hahow-recruit.herokuapp.com'
 hahowServerHeroesPath = 'heroes'
 hahowServerAuthPath = 'auth'
+REDIS_HOST='redis'
 retryLimit = 3
-REDIS_HOST='redis' 
 ```
+- cacheMode :
+    - need cache mode use 'on'
+    - normal mode use 'off'
+- REDIS_HOST : 
+    - docker run use 'redis'  
+    - local run use 'localhost'
+- retryLimit : 
+    - retry count 0 hahow API server data error rate 1/3
+    - recommended to use 3 data error rate approximate 1%
+
+<img width="300" src="https://d3cek75nx38k91.cloudfront.net/hahow/10000times_retry0.png">
+<img width="300" src="https://d3cek75nx38k91.cloudfront.net/hahow/10000times_retry3.png">
+
 ### Local start
 1. **modify docker-compose.yaml**: 
 comment out below code  
-`- ./ssl/coolhahow.xyz.crt:/etc/nginx/ssl/ssl.csr`
-`- ./ssl/coolhahow.xyz.key:/etc/nginx/ssl/ssl.key`
-`- 443:443`
+- `./ssl/coolhahow.xyz.crt:/etc/nginx/ssl/ssl.csr`
+- `./ssl/coolhahow.xyz.key:/etc/nginx/ssl/ssl.key`
+- `443:443`
 2. **modify nginx/node.conf**:  
 ex:
 ```
@@ -64,146 +80,54 @@ Remember start docker first.
 http://localhost/heroes  
 http://localhost/heroes/:heroId
 
+## Run API test
 
-# Concepts
+1. Please install redis-server on local machine, and start redis-server.
+2. `npm run test`
 
-本專案使用 node.js 搭配 `express` 進行 API 服務, service process 透過 `pm2` 進行管理.
+## Architecture
+<img width="800" src="https://d3cek75nx38k91.cloudfront.net/hahow/hahow_arch.png">
 
-log 部分則使用 `pino` 套件達到 log level 管理, 以利在 (需要) production 環境時可以關閉非必要與 debug logs.
+## Third party library
 
-文件的部分, 則透過 `apidoc` 進行 API 文件的生成.
+* [express](https://www.npmjs.com/package/express): a light web framework of Node.js helps us to establish web server
+* [axios](https://www.npmjs.com/package/axios): promise based HTTP client for the browser and node.js, use this library to call hahow API service 
+* [dotenv](https://www.npmjs.com/package/dotenv): a zero-dependency module that loads environment variables from a .env file into process.env. Used to manage environmental variables
+* [redis](https://redis.io/):  a in-memory key-value database, used to implement ratelimiter and cache mode
+* [eslint](https://www.npmjs.com/package/eslint): a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code. Used to manage coding style
+* [nock](https://www.npmjs.com/package/nock): can be used to test modules that perform HTTP requests in isolation. Used to simulate hahow API service
 
-- [apidoc 說明文件](https://assessment.roycrxtw.uk/apidoc)
+## Comment rule
 
-## test
+- Some code in order to emphasize purpose and explain ideas.(Ex: In cache mode use cache data directly)
+- Explain the effects of third party library (Ex: nock)
+- Some special cases for judging the response from third party api response.（Ex: if status = 200 , but data.code = 1000 ）
+- The code of config file (nginx/node.conf, docker-compose.yaml) 使用comment來分辨local or production environmen需使用版本
 
-使用 jest 框架搭配 sinon 做 unit test. 詳見 [關於測試](#關於測試).
+## Difficulty
 
+### API simulates unstable state
 
-## 系統架構圖
+Discovered that even if the status code is 200, Hahow’s API would provide wrong data.
+Because of the above, I tested the API with artillery.io and found that the incorrect rate is about 1/3. Therefore, I designed retry mechanism in the code so the app can retry until it gets the right format of response. The maximum retry count can be configured in **.env** file.
 
-系統架構在個人的 AWS EC2 instance 上, 透過不同的 container 去服務不同的 API services.
+- retryLimit : 
+    - retry count 0 hahow API server data error rate 1/3
+    - recommended to use 3 data error rate approximate 1%
 
-在 app server 前面尚有一台架在 ec2 上的 nginx 作為 reverse proxy 以及提供 TLS 連線的功能.
+- authenticate :
+    - if headers has name or password, need to check authenticate, if err return
+    - if authenticate statusCode200 but not ok, treated as not auth
 
-![infra](static/chart-infra.png)
+### rate limiter
 
-## 部署流程
+API server為了防止High-rate DDoS攻擊,我設計了rate limiter
+透過redis實作rate limiter,並可透過.env更改限制頻率
 
-![infra](static/chart-cicd.png)
-
-
-# 如何跑起來
-
-若有安裝 docker 以及 docker-compose:
-
-```bash
-git clone https://github.com/Tsai-Hsueh-Kuan/Hahow-Recruit.git
-cd Hahow-Recruit
-docker-compose up -d
-
-# container 跑起來後:
-
-echo '嘗試取得 service about 資訊'
-curl -X GET http://localhost:3000/
-# response: {"msg":"Hahow Assessment Project by roycrxtw"}
-
-echo '嘗試取得英雄列表'
-curl -H "Accept: application/json" -H "Content-Type: application/json" -H "Name: hahow" -H "Password: rocks" -X GET http://localhost:3000/heroes
-# response: a hero list
-```
-
-若要直接執行, 不使用 docker and docker-compose:
-
-```bash
-git clone https://github.com/roycrxtw/assessment-hahow.git
-cd Hahow-Recruit
-npm i -g pm2
-npm install -y
-pm2 start app.js
-
-# pm2 跑起來後:
-
-echo '嘗試取得 service about 資訊'
-curl -X GET http://localhost:3000/
-# response: {"msg":"Hahow Assessment Project by roycrxtw"}
-
-echo '嘗試取得英雄列表'
-curl -H "Accept: application/json" -H "Content-Type: application/json" -H "Name: hahow" -H "Password: rocks" -X GET http://localhost:3000/heroes
-# response: a hero list
-```
-
-# Coding Style
-
-專案透過 eslint 之輔助, 並設定 airbnb style 來協助 coding style 之一致.
-
-其中有部分 eslint rule 有做客製化設定, 設定可於下列路徑查詢
-```bash
-<project-root>/.eslintrc.js
-```
-
-# 關於測試
-
-
-
-## Unit-test
-
-
-
-## API test
-
-
-## 如何執行測試
-
-# Issues
-
-## 遠端 API 模擬不穩定狀態
-
-實作拿取資料時會發現hahowAPI其中幾隻回應有模擬錯誤(statusCode=200但資料不正確),
-假定API server不穩定,經由 artillery.io 測試發現錯誤率約略在1/3,
-故在API設計retry機制,系統可以直接重新嘗試取得符合規範的 response,
-retry次數限制可透過 **.env** 設定
-
-> 目前 retry 設定為 3.
-
-### Why retry?
-
-這邊採用 retry 而非 cache 的想法是希望 API 呈現的結果是直接反映出遠端即時的資料狀態, 例如英雄已經升級為 str 100, 使用者可能希望立刻看到他的結果.
-而非快取住的稍微過時的資料. 另外可能這資料再次被讀取的機會很低, cache 的效益就會遞減許多.
-
-但使用 retry 的結果缺點是 API 在回應上會慢了不少, 且可能在 retry 耗盡後依舊無法取得正確結果.
-
-若需求上允許資料稍微不那麼即時的話, 或許採用 cache 機制是一個較佳的方案, 可以有效地提升 API 回應速度.
-
-### Return null or throw error?
-
-`什麼時候會丟出錯誤` 當呼叫遠端 API 時耗盡重試次數, 算是 `服務` 上出了問題, 故是回傳 error.
-
-`什麼時候回傳 null or []` 404 找不到資料時, 在專案中不視為錯誤, 故如果沒有找到結果時會是回傳 [] or null.
-
-另外, 資料檢驗上使用較嚴格的方式確認, 當資料不符合規範時則直接拋棄該資料.
-
-
-## Axios
-
-過去都是使用 request 套件做 http 請求為主, 但因為該套件已經被標註為 `@deprecated`, 故利用此機會選用另一個使用率亦非常高的套件 `axios`.
-
-### 選用新套件的原則
-
-通常如果有數個功能都很接近的套件需要選擇時, 我會去觀察該套件的下載率, 協作者數目, github 上的 open issue, 專案最後 commit 時間為何以及是否 pass test, 
-透過這幾個因素去判斷套件是否合用, 避免套件有問題但其實沒人在維護, 或是社群不活躍有問題很難取得協助.
-
-若有需要時還必須檢驗套件的 license 是否可以使用在商用專案上.
-
-> 所以經過比較後決定嘗試使用 axios.
-
-### Axios 的特別處
-
-這個套件比較特別的是非 200~300 系列的 response 會直接變成錯誤, 故需要特別設定 validateStatus option 去排除 404 類型的回應.
-
-> 想法是 404 找不到資料不代表是一種錯誤, e.g. 搜尋某個關鍵字沒有任何商品不代表有東西壞了, 也不需要去 retry.
+## Bonus
 
 ## API Documentation
+
 ### List Heroes [GET] /heroes
 * Request
 ```
@@ -271,7 +195,7 @@ curl -H "Accept: application/json" -H "Content-Type: application/json" -X GET ht
   "message": "the hero id should be a positive interger"
 }
 ```
-2. id out of range (id is greater than total count of heroes) 
+2. id out of range (no match id) 
 `Response 400`
 ```json=
 {
@@ -387,7 +311,7 @@ curl -H "Accept: application/json" -H "Content-Type: application/json" -H "Name:
   "message": "the hero id should be a positive interger"
 }
 ```
-2. id out of range (id is greater than total count of heroes) 
+2. id out of range (no match id) 
 `Response 400`
 ```json=
 {
