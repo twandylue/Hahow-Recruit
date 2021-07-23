@@ -7,19 +7,17 @@ const cache = redis.createClient(6379, REDIS_HOST, { no_ready_check: true })
 cache.on('ready', () => {
   console.log('redis is ready')
 })
-cache.on('error', () => {
-  console.log('redis is error')
-})
+cache.on('error', () => {})
 
-cache.flushdb(function (err, ok) {
-  if (err) {
-    console.log(err)
-    return err
-  }
-  if (ok) {
-    console.log(ok)
-  }
-})
+// cache.flushdb(function (err, ok) {
+//   if (err) {
+//     console.log(err)
+//     return err
+//   }
+//   if (ok) {
+//     console.log(ok)
+//   }
+// })
 
 const getCache = promisify(cache.get).bind(cache)
 const setCache = promisify(cache.set).bind(cache)

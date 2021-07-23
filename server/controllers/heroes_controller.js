@@ -5,6 +5,7 @@ const { cacheMode } = process.env
 
 const listHeroes = async (req, res, next) => {
   const isUserAuth = req.isUserAuth
+
   // if in cache mode and the cache has data, use it directly
   if (cacheMode) {
     let cacheHeroes
@@ -13,7 +14,7 @@ const listHeroes = async (req, res, next) => {
     } else {
       cacheHeroes = await getCache('heroes')
     }
-    if (cacheHeroes) return res.status(200).json({ heroes: JSON.parse(cacheHeroes) })
+    if (cacheHeroes) return res.status(200).json(JSON.parse(cacheHeroes))
   }
   const heroesResult = await getHeroes(0, isUserAuth) // now retryCount = 0
   if (heroesResult.statusCode === 200) {

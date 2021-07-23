@@ -1,7 +1,6 @@
 require('dotenv').config()
 const { rateLimiterRoute } = require('./util/ratelimiter')
-const { PORT_TEST, PORT, NODE_ENV } = process.env
-const port = NODE_ENV === 'test' ? PORT_TEST : PORT
+const { PORT, NODE_ENV } = process.env
 // Express Initialization
 const express = require('express')
 const cors = require('cors')
@@ -37,7 +36,7 @@ app.use(function (err, req, res, next) {
 
 // check production mode or development mode
 if (NODE_ENV === ('production' || 'development')) {
-  app.listen(port, () => { console.log(`Listening on port: ${port}`) })
+  app.listen(PORT, () => { console.log(`Listening on port: ${PORT}`) })
 }
 
 module.exports = app

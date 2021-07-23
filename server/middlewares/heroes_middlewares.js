@@ -24,8 +24,10 @@ const authCheck = async (req, res, next) => {
   // if verification err , avoid getting unauthorized data , return
   if (err) return res.status(400).json({ message: 'Please check Name & Password' })
   // if verification ok , but message = Backend Error , not retry , avoid getting unauthorized data
-  if (authResult.status === 200 && authResult.statusText === 'OK') isAuth = true
-  req.isUserAuth = isAuth
+  if (authResult.status === 200 && authResult.data.code !== 1000) {
+    isAuth = true
+    req.isUserAuth = isAuth
+  }
   return next()
 }
 

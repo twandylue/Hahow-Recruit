@@ -47,7 +47,7 @@ const getHeroes = async function (retryCount, isUserAuth) {
       }
     }
     // cache store heroes profile
-    if (cacheMode) await setCache('heroes_profiles', JSON.stringify(heroesResult.data), 'EX', 600)
+    if (cacheMode) await setCache('heroes_profiles', JSON.stringify({ heroes: heroesResult.data }), 'EX', 600)
     return { statusCode: 200, heroes: heroesResult.data }
   } else {
     return { statusCode: 200, heroes: heroesResult.data }
