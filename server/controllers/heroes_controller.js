@@ -4,13 +4,18 @@ const { getCache } = require('../../util/cache')
 const { cacheMode } = process.env
 
 const listHeroes = async (req, res, next) => {
+  const isUserAuth = req.isUserAuth
   // if in cache mode and the cache has data, use it directly
   if (cacheMode) {
-    const cacheHeroes = await getCache('heroes')
-    if (cacheHeroes) return res.status(200).json(JSON.parse(cacheHeroes))
+    let cacheHeroes
+    if (isUserAuth) {
+      cacheHeroes = await getCache('heroes_profiles')
+    } else {
+      cacheHeroes = await getCache('heroes')
+    }
+    if (cacheHeroes) return res.status(200).json({ heroes: JSON.parse(cacheHeroes) })
   }
-  const retryCount = 0
-  const heroesResult = await getHeroes(retryCount, req.isUserAuth)
+  const heroesResult = await getHeroes(0, isUserAuth) // now retryCount = 0
   if (heroesResult.statusCode === 200) {
     res.status(200).json({ heroes: heroesResult.heroes })
   } else {
@@ -20,13 +25,18 @@ const listHeroes = async (req, res, next) => {
 
 const singleHero = async (req, res, next) => {
   const heroId = req.params.id
+  const isUserAuth = req.isUserAuth
   // if in cache mode and the cache has data, use it directly
   if (cacheMode) {
-    const cacheSingoHero = await getCache(`${heroId}`)
+    let cacheSingoHero
+    if (req.isUserAuth) {
+      cacheSingoHero = await getCache(`${heroId}_profile`)
+    } else {
+      cacheSingoHero = await getCache(`${heroId}`)
+    }
     if (cacheSingoHero) return res.status(200).json(JSON.parse(cacheSingoHero))
   }
-  const retryCount = 0
-  const singleHeroResult = await getSingleHero(retryCount, heroId, req.isUserAuth)
+  const singleHeroResult = await getSingleHero(0, heroId, isUserAuth) // now retryCount = 0
   if (singleHeroResult.statusCode === 200) {
     res.status(200).json(singleHeroResult.hero)
   } else {
