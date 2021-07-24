@@ -2,6 +2,7 @@
 
 ### Assessment project for HaHow recruit
 
+
 # Contents
 
 * [Start Server](#Start-Server)
@@ -30,29 +31,29 @@ NODE_ENV = 'production'
 PORT = 3000
 RATE_LIMIT_WINDOW = 1
 RATE_LIMIT_COUNT = 10
-cacheMode='off'
-hahowServerHost = 'https://hahow-recruit.herokuapp.com'
-hahowServerHeroesPath = 'heroes'
-hahowServerAuthPath = 'auth'
+CACHE_MODE='off'
+HAHOWSERVER_HOST = 'https://hahow-recruit.herokuapp.com'
+HAHOWSERVER_HEROESPATH = 'heroes'
+HAHOWSERVER_AUTHPATH = 'auth'
 REDIS_HOST='redis'
-retryLimit = 3
+RERTY_LIMIT = 3
 ```
-- cacheMode :
+- CACHE_MODE :
     - normal mode use 'off'
     - need cache mode use 'on'
 - REDIS_HOST : 
     - docker run use 'redis'  
     - local run use 'localhost'
-- retryLimit : 
+- RERTY_LIMIT : 
     - retry count 0 hahow API server data error rate 1/3
     - recommended to use 3, data error rate approximate 1%
 
-retryLimit = 0
+RERTY_LIMIT = 0
 
 <img width="300" src="https://d3cek75nx38k91.cloudfront.net/hahow/10000times_retry0.png">
 
 
-retryLimit = 3
+RERTY_LIMIT = 3
 
 <img width="300" src="https://d3cek75nx38k91.cloudfront.net/hahow/10000times_retry3.png">
 
@@ -85,7 +86,7 @@ server {
 }
 ```
 3. **Run docker-compose.yaml**:
-Remember start docker first.  
+Start docker first.  
 `docker-compose up -d`
 
 4. **Now you can call local api**:   
@@ -100,18 +101,18 @@ http://localhost/heroes/:heroId
 
 ### fargate mode
 
-Use fargate to replace EC2 because this project is based on docker architecture, fargate can use vCPU & memory more accurately (take as much as you need), and there is no need to manage host (nginx is not required)
-In addition, I manage the ssl certificate through certificate manager,it can directly set the load balancer to mount fargate to https
+Use fargate to replace EC2 because this project is based on docker. Fargate can utilize vCPU & memory more accurately (take as much as you need), and there is no need to manage host (nginx is not required)
+In addition, I manage the SSL certificate through certificate manager. It can directly set the load balancer to mount fargate to https
 <img width="800" src="https://d3cek75nx38k91.cloudfront.net/hahow/hahow_fargate_arch.png">
 
 ## Third party library
 
-* [express](https://www.npmjs.com/package/express): a light web framework of Node.js helps us to establish web server
-* [axios](https://www.npmjs.com/package/axios): promise based HTTP client for the browser and node.js, use this library to call hahow API service 
-* [dotenv](https://www.npmjs.com/package/dotenv): a zero-dependency module that loads environment variables from a .env file into process.env. Used to manage environmental variables
-* [redis](https://redis.io/):  a in-memory key-value database, used to implement ratelimiter and cache mode
-* [eslint](https://www.npmjs.com/package/eslint): a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code. Used to manage coding style
-* [nock](https://www.npmjs.com/package/nock): can be used to test modules that perform HTTP requests in isolation. Used to simulate hahow API service
+* [express](https://www.npmjs.com/package/express): A light web framework of Node.js helps us to establish web server
+* [axios](https://www.npmjs.com/package/axios): Promise based HTTP client for the browser and node.js, use this library to call hahow API service 
+* [dotenv](https://www.npmjs.com/package/dotenv): A zero-dependency module that loads environment variables from a .env file into process.env. Used to manage environmental variables
+* [redis](https://redis.io/): A in-memory key-value database, used to implement ratelimiter and cache mode
+* [eslint](https://www.npmjs.com/package/eslint): A tool for identifying and reporting on patterns found in ECMAScript/JavaScript code. Used to manage coding style
+* [nock](https://www.npmjs.com/package/nock): Can be used to test modules that perform HTTP requests in isolation. Used to simulate hahow API service
 * [chai & chai http](https://www.npmjs.com/package/chai): Chai makes testing much easier by giving me lots of assertions I can run against my code. Chai-http works with assertions to perform HTTP integration test
 
 ## Comment rule
@@ -119,47 +120,47 @@ In addition, I manage the ssl certificate through certificate manager,it can dir
 - Some code in order to emphasize purpose and explain ideas.(Ex: In cache mode use cache data directly)
 - Explain the effects of third party library (Ex: nock)
 - Some special cases for judging the response from third party api response.（Ex: if status = 200 , but data.code = 1000 ）
-- The code of config file (nginx/node.conf, docker-compose.yaml) 使用comment來分辨local or production environmen需使用版本
+- The code of config file (nginx/node.conf, docker-compose.yaml) use comment to distinguish local or production environment
 
 ## Difficulty
 
-### API simulates unstable state
+### Hahow API simulates unstable state
 
 Discovered that even if the status code is 200, Hahow’s API would provide wrong data.
-Because of the above, I tested the API with artillery.io and found that the incorrect rate is about 1/3. Therefore, I designed retry mechanism in the code so the app can retry until it gets the right format of response. The maximum retry count can be configured in **.env** file.
+Because of the above observation, I tested the API with artillery.io and found that the incorrect rate is about 1/3. Therefore, I designed retry mechanism in the code so the app can retry until it gets the right format of response. The maximum retry counts can be configured in **.env** file.
 
-- retryLimit : 
-    - retry count 0 hahow API server data error rate 1/3
-    - recommended to use 3 data error rate approximate 1%
+- RERTY_LIMIT : 
+    - Hahow API server data error rate about 1/3.
+    - Recommended to set RERTY_LIMIT to 3, then data error rate approximate 1%.
 
 - authenticate :
-    - if headers has name or password, need to check authenticate, if error return 
-    - if authenticate statusCode200 but not ok, treated as not auth
+    - If header's key has name or password, need to check authenticate. If authenticate fail, return statusCode 400.
+    - If authenticate sussess but the response message is not 'OK', treated the request as not authenticate user.
 
+### Fargate
 
+I have heard of fargate when I was reading and looking for docker-related information, but I have never had time to do research. After learning about the content of this hahow assessment project, I felt that I must study and use it because it is really cool!
+
+The biggest problem encountered is the SSL setting. Because the EC2 architecture carries the SSL certificate through nginx, but at fargate architecture, you can choose not to use nginx. Later, I found the information and said that it can be implemented through load balancer. Therefore, I host the domain through Route53 and point to the load balancer. In addition, I manage the SSL certificate through certificate manager. It can directly set the load balancer to mount fargate to https.
 
 ## Bonus
 
 ### rate limiter
 
-In order to prevent High-rate DDoS attacks on API server, I designed rate limiter
-Implement rate limiter through redis, and change the limit frequency through **.env** file
+In order to prevent high-rate DDoS attacks on API server, I designed rate limiter.
+Implement rate limiter through redis, and change the limit frequency through **.env** file.
 ```
-retryLimit = 3
+RERTY_LIMIT = 3
 ```
 
 ### cache mode control
 
-若API重複使用次數多,且較無即時性需求,可將.env file中的改為 'on'
+If the API is reused a lot and there is no need for real-time data, you can change the .env file to 'on'.
 ```
-cacheMode = 'on'
+CACHE_MODE = 'on'
 ```
-可讓相同暫存在redis中,節省重複撈取流量,及節省時間
-（預設為off）
-
-### fargate
-
-
+The data can be temporarily stored in redis, saving repeated fishing traffic, and saving time.
+(The default is 'off')
 
 ## API Documentation
 

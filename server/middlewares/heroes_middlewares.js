@@ -1,8 +1,8 @@
 const { handler } = require('../../util/util')
 const axios = require('axios')
 require('dotenv').config()
-const { hahowServerHost, hahowServerAuthPath } = process.env
-const authUrl = `${hahowServerHost}/${hahowServerAuthPath}`
+const { HAHOWSERVER_HOST, HAHOWSERVER_AUTHPATH } = process.env
+const authUrl = `${HAHOWSERVER_HOST}/${HAHOWSERVER_AUTHPATH}`
 
 const isPositiveInteger = (str) => /^\+?([1-9]\d*)$/.test(str)
 // ^\\d+$ Positive Integer or 0

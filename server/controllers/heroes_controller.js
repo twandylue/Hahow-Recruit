@@ -1,12 +1,12 @@
 require('dotenv').config()
 const { getHeroes, getSingleHero } = require('../../util/hahowApi')
 const { getCache } = require('../../util/cache')
-const { cacheMode } = process.env
+const { CACHE_MODE } = process.env
 
 const listHeroes = async (req, res, next) => {
   const isUserAuth = req.isUserAuth
   // if in cache mode and the cache has data, use it directly
-  if (cacheMode === 'on') {
+  if (CACHE_MODE === 'on') {
     let cacheHeroes
     if (isUserAuth) {
       cacheHeroes = await getCache('heroes_profiles')
@@ -27,7 +27,7 @@ const singleHero = async (req, res, next) => {
   const heroId = req.params.id
   const isUserAuth = req.isUserAuth
   // if in cache mode and the cache has data, use it directly
-  if (cacheMode === 'on') {
+  if (CACHE_MODE === 'on') {
     let cacheSingoHero
     if (req.isUserAuth) {
       cacheSingoHero = await getCache(`${heroId}_profile`)
