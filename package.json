@@ -1,12 +1,12 @@
 {
-  "name": "docker",
+  "name": "hahow",
   "version": "1.0.0",
-  "description": "",
+  "description": "這是一個小型的徵才專案，會需要你使用 Node.js，來寫簡單的 API server，而實作這個 API server 所需要使用到的資料，則會在我們預先寫好的 API 中提供",
   "main": "app.js",
   "scripts": {
-    "test": "mocha"
+    "test": "NODE_ENV=test REDIS_HOST='localhost' mocha --exit"
   },
-  "author": "",
+  "author": "Hsueh Kuan Tsai",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.1",
@@ -14,7 +14,6 @@
     "dotenv": "^10.0.0",
     "env": "^0.0.2",
     "express": "^4.17.1",
-    "express-rate-limit": "^5.3.0",
     "redis": "^3.1.2"
   },
   "devDependencies": {
@@ -25,6 +24,7 @@
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.0"
+    "eslint-plugin-promise": "^5.1.0",
+    "nock": "^13.1.1"
   }
 }

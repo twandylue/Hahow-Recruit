@@ -1,55 +1,47 @@
-const axios = require('axios')
-
 require('dotenv').config()
-const { hahowServerHost, hahowServerHeroesPath, retryLimit } = process.env
-
-const heroesListUrl = `${hahowServerHost}/${hahowServerHeroesPath}`
-
-const handler = (promise) => promise
-  .then((data) => ([data, undefined]))
-  .catch((error) => ([undefined, error]))
+const { getHeroes, getSingleHero } = require('../../util/hahowApi')
+const { getCache } = require('../../util/cache')
+const { cacheMode } = process.env
 
 const listHeroes = async (req, res, next) => {
-  const [heroesRes, error] = await handler(axios.get(heroesListUrl))
-  if (error) {
-    return res.status(500).json({
-      message: 'server error, please try it again'
-    })
+  const isUserAuth = req.isUserAuth
+  // if in cache mode and the cache has data, use it directly
+  if (cacheMode === 'on') {
+    let cacheHeroes
+    if (isUserAuth) {
+      cacheHeroes = await getCache('heroes_profiles')
+    } else {
+      cacheHeroes = await getCache('heroes')
+    }
+    if (cacheHeroes) return res.status(200).json(JSON.parse(cacheHeroes))
   }
-  if (heroesRes.status === 200 && heroesRes.data.code === 1000) {
-    return res.status(500).json({
-      message: 'server error, please try it again'
-    })
+  const heroesResult = await getHeroes(0, isUserAuth) // now retryCount = 0
+  if (heroesResult.statusCode === 200) {
+    res.status(200).json({ heroes: heroesResult.heroes })
+  } else {
+    res.status(heroesResult.statusCode).json({ message: heroesResult.message })
   }
-  return res.status(200).json({
-    heroes: heroesRes.data
-  })
 }
 
 const singleHero = async (req, res, next) => {
   const heroId = req.params.id
-  let retryCount = 0
-  const test = async function () {
-    const [heroDetailRes, error] = await handler(axios.get(`${heroesListUrl}/${heroId}`))
-    if (error) {
-      return res.status(400).json({
-        message: 'maybe the input hero id out of range, please try other id again'
-      })
-    }
-    if (heroDetailRes.status === 200 && heroDetailRes.data.code === 1000) {
-      retryCount++
-      if (retryCount < retryLimit) {
-        test()
-      } else {
-        return res.status(500).json({
-          message: 'server error, please try it again'
-        })
-      }
+  const isUserAuth = req.isUserAuth
+  // if in cache mode and the cache has data, use it directly
+  if (cacheMode === 'on') {
+    let cacheSingoHero
+    if (req.isUserAuth) {
+      cacheSingoHero = await getCache(`${heroId}_profile`)
     } else {
-      return res.status(200).json(heroDetailRes.data)
+      cacheSingoHero = await getCache(`${heroId}`)
     }
+    if (cacheSingoHero) return res.status(200).json(JSON.parse(cacheSingoHero))
   }
-  test()
+  const singleHeroResult = await getSingleHero(0, heroId, isUserAuth) // now retryCount = 0
+  if (singleHeroResult.statusCode === 200) {
+    res.status(200).json(singleHeroResult.hero)
+  } else {
+    res.status(singleHeroResult.statusCode).json({ message: singleHeroResult.message })
+  }
 }
 
 module.exports = {
