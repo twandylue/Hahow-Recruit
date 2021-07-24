@@ -1,6 +1,6 @@
 # Assessment-hahow
 
-Assessment project for HaHow recruit
+### Assessment project for HaHow recruit
 
 # Contents
 
@@ -40,12 +40,19 @@ retryLimit = 3
     - local run use 'localhost'
 - retryLimit : 
     - retry count 0 hahow API server data error rate 1/3
-    - recommended to use 3 data error rate approximate 1%
+    - recommended to use 3, data error rate approximate 1%
+
+retryLimit = 0
 
 <img width="300" src="https://d3cek75nx38k91.cloudfront.net/hahow/10000times_retry0.png">
+
+
+retryLimit = 3
+
 <img width="300" src="https://d3cek75nx38k91.cloudfront.net/hahow/10000times_retry3.png">
 
 ### Local start
+
 1. **modify docker-compose.yaml**: 
 comment out below code  
 - `./ssl/coolhahow.xyz.crt:/etc/nginx/ssl/ssl.csr`
@@ -116,15 +123,21 @@ Because of the above, I tested the API with artillery.io and found that the inco
     - recommended to use 3 data error rate approximate 1%
 
 - authenticate :
-    - if headers has name or password, need to check authenticate, if err return
+    - if headers has name or password, need to check authenticate, if error return 
     - if authenticate statusCode200 but not ok, treated as not auth
+
+
+
+## Bonus
 
 ### rate limiter
 
 API server為了防止High-rate DDoS攻擊,我設計了rate limiter
 透過redis實作rate limiter,並可透過.env更改限制頻率
 
-## Bonus
+### cache mode control
+
+
 
 ## API Documentation
 

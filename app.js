@@ -35,7 +35,7 @@ app.use(function (err, req, res, next) {
 })
 
 // check production mode or development mode
-if (NODE_ENV === ('production' || 'development')) {
+if (NODE_ENV === 'production' || NODE_ENV === 'development') {
   app.listen(PORT, () => { console.log(`Listening on port: ${PORT}`) })
 }
 
