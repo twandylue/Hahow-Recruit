@@ -18,6 +18,11 @@
 ## Start Server
 
 ### Preparation
+
+```
+git clone https://github.com/Tsai-Hsueh-Kuan/Hahow-Recruit.git
+```
+
 make sure to add **.env** file
 ex:
 ```
@@ -25,7 +30,7 @@ NODE_ENV = 'production'
 PORT = 3000
 RATE_LIMIT_WINDOW = 1
 RATE_LIMIT_COUNT = 10
-cacheMode='on'
+cacheMode='off'
 hahowServerHost = 'https://hahow-recruit.herokuapp.com'
 hahowServerHeroesPath = 'heroes'
 hahowServerAuthPath = 'auth'
@@ -33,8 +38,8 @@ REDIS_HOST='redis'
 retryLimit = 3
 ```
 - cacheMode :
-    - need cache mode use 'on'
     - normal mode use 'off'
+    - need cache mode use 'on'
 - REDIS_HOST : 
     - docker run use 'redis'  
     - local run use 'localhost'
@@ -89,11 +94,15 @@ http://localhost/heroes/:heroId
 
 ## Run API test
 
-1. Please install redis-server on local machine, and start redis-server.
-2. `npm run test`
+1. `npm run test`
 
 ## Architecture
-<img width="800" src="https://d3cek75nx38k91.cloudfront.net/hahow/hahow_arch.png">
+
+### fargate mode
+
+Use fargate to replace EC2 because this project is based on docker architecture, fargate can use vCPU & memory more accurately (take as much as you need), and there is no need to manage host (nginx is not required)
+In addition, I manage the ssl certificate through certificate manager,it can directly set the load balancer to mount fargate to https
+<img width="800" src="https://d3cek75nx38k91.cloudfront.net/hahow/hahow_fargate_arch.png">
 
 ## Third party library
 
@@ -103,6 +112,7 @@ http://localhost/heroes/:heroId
 * [redis](https://redis.io/):  a in-memory key-value database, used to implement ratelimiter and cache mode
 * [eslint](https://www.npmjs.com/package/eslint): a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code. Used to manage coding style
 * [nock](https://www.npmjs.com/package/nock): can be used to test modules that perform HTTP requests in isolation. Used to simulate hahow API service
+* [chai & chai http](https://www.npmjs.com/package/chai): Chai makes testing much easier by giving me lots of assertions I can run against my code. Chai-http works with assertions to perform HTTP integration test
 
 ## Comment rule
 
@@ -132,10 +142,22 @@ Because of the above, I tested the API with artillery.io and found that the inco
 
 ### rate limiter
 
-API server為了防止High-rate DDoS攻擊,我設計了rate limiter
-透過redis實作rate limiter,並可透過.env更改限制頻率
+In order to prevent High-rate DDoS attacks on API server, I designed rate limiter
+Implement rate limiter through redis, and change the limit frequency through **.env** file
+```
+retryLimit = 3
+```
 
 ### cache mode control
+
+若API重複使用次數多,且較無即時性需求,可將.env file中的改為 'on'
+```
+cacheMode = 'on'
+```
+可讓相同暫存在redis中,節省重複撈取流量,及節省時間
+（預設為off）
+
+### fargate
 
 
 
