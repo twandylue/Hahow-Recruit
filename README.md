@@ -14,6 +14,7 @@
 * [Comment rule](#Comment-rule)
 * [Difficulty](#Difficulty)
 * [Bonus](#Bonus)
+* [Retrospect](#Retrospect)
 * [API Documentation](#API-Documentation)
 
 ## Start Server
@@ -161,6 +162,10 @@ CACHE_MODE = 'on'
 ```
 The data can be temporarily stored in redis, saving repeated fishing traffic, and saving time.
 (The default is 'off')
+
+## Retrospect
+
+I think this assignment is challenging and has a lot for me to learn. It has a lot of details, such as the error rate of the hahow API response. I spent a lot of time this week researching, planning, and trying to make it cooler. For example, the fargate architecture took almost three days to understand and use it. Although it is not easy, I enjoy it. Finally, I am very grateful for the answers in slack, let me know the direction of the project.
 
 ## API Documentation
 
